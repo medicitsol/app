@@ -13,18 +13,18 @@ exports.getBillingRevenueReport = (req, res) => {
 
 
     if (reportType == 1) {
-        dateFilter = {}
+        dateFilter = { status: { $ne: 'DELETED' } }
     } else if (reportType == 2) {
         var lastWeek = new Date();
 
-        dateFilter = { createdAt: { $gte: lastWeek.setDate(lastWeek.getDate() - 1) } }
+        dateFilter = { createdAt: { $gte: lastWeek.setDate(lastWeek.getDate() - 1) }, status: { $ne: 'DELETED' } }
 
     } else if (reportType == 3) {
         var date = new Date();
-        dateFilter = { createdAt: { $gte: new Date(date.getFullYear(), date.getMonth(), 1) } }
+        dateFilter = { createdAt: { $gte: new Date(date.getFullYear(), date.getMonth(), 1) }, status: { $ne: 'DELETED' } }
 
     } else if (reportType == 4) {
-        dateFilter = { createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) } }
+        dateFilter = { createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) }, status: { $ne: 'DELETED' } }
 
     }
 
@@ -34,7 +34,7 @@ exports.getBillingRevenueReport = (req, res) => {
     var total = 0;
 
 
-    Billing.find(dateFilter)
+    Billing.find(dateFilter).sort({ billDate: 1 })
         .then(bill => {
 
 
@@ -47,6 +47,7 @@ exports.getBillingRevenueReport = (req, res) => {
                 var responseWithTotal = {
                     createdDate: element.createdAt,
                     editedDate: element.updatedAt,
+                    billDate: element.billDate,
                     consultationFee: element.consultationFee,
                     pharmaceuticalFee: element.pharmaceuticalFee,
                     laboratoryFee: element.laboratoryFee,
@@ -65,6 +66,28 @@ exports.getBillingRevenueReport = (req, res) => {
 
 
             res.send(responsePayload);
+
+
+
+
+
+
+
+            // Billing.aggregate(
+
+
+            //     [{
+            //         $group: {
+            //             billDate: null,
+            //             itemQuantity: {
+            //                 $sum: "$itemQuantity"
+            //             }
+            //         }
+            //     }])
+
+            //     .then(qtyBalance => {
+            //         res.send(qtyBalance);
+
 
 
         }).catch(err => {

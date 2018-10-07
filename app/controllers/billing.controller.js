@@ -301,7 +301,13 @@ exports.editBill = (req, res) => {
 
 // Retrieve and return all orders from the database.
 exports.findAll = (req, res) => {
-    Billing.paginate({ status: { $ne: 'DELETED' } }, { limit: 20 })
+
+    var options = {
+        sort: { updatedAt: -1 },
+        limit: 20
+    };
+
+    Billing.paginate({ status: { $ne: 'DELETED' } }, options)
         .then(orders => {
             res.send(orders);
         }).catch(err => {
