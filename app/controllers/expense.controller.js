@@ -20,14 +20,75 @@ exports.create = (req, res) => {
 
 
 
-            // Create an Item
+
+            // add selected expense category to amounts
+
+            var drugsAmount = 0;
+            var salariesAmount = 0;
+            var teaClubAmount = 0;
+            var stationeriesAmount = 0;
+            var utilityBillsAmount = 0;
+            var repairsAmount = 0;
+            var capexAmount = 0;
+            var othersAmount = 0;
+
+            switch (req.body.expenseCategory) {
+                case "Drugs":
+                    drugsAmount = req.body.amount;
+                    break;
+
+                case "Salaries":
+                    salariesAmount = req.body.amount;
+                    break;
+
+                case "Tea club":
+                    teaClubAmount = req.body.amount;
+                    break;
+
+                case "Stationary":
+                    stationeriesAmount = req.body.amount;
+                    break;
+
+                case "Utility bills":
+                    utilityBillsAmount = req.body.amount;
+                    break;
+
+                case "Repairs":
+                    repairsAmount = req.body.amount;
+                    break;
+
+                case "Capex":
+                    capexAmount = req.body.amount;
+                    break;
+
+                case "Others":
+                    othersAmount = req.body.amount;
+                    break;
+            }
+
+
+
+
+            // Create a expense
             const expense = new Expense({
 
                 voucherNo: expenseNumber,
                 voucherDate: req.body.voucherDate,
                 expenseCategory: req.body.expenseCategory,
                 expense: req.body.expense,
-                amount: req.body.amount,
+                // amount: req.body.amount,
+
+
+                drugsAmount: drugsAmount,
+                salariesAmount: salariesAmount,
+                teaClubAmount: teaClubAmount,
+                stationeriesAmount: stationeriesAmount,
+                utilityBillsAmount: utilityBillsAmount,
+                repairsAmount: repairsAmount,
+                capexAmount: capexAmount,
+                othersAmount: othersAmount,
+
+
                 expenseNote: req.body.expenseNote,
                 status: 'NEW'
 

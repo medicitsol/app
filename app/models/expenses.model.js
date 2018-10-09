@@ -7,7 +7,17 @@ const ExpenseSchema = mongoose.Schema({
     voucherDate: String,
     expenseCategory: String,
     expense: String,
-    amount: Number,
+    // amount: Number,
+
+    drugsAmount: Number,
+    salariesAmount: Number,
+    teaClubAmount: Number,
+    stationeriesAmount: Number,
+    utilityBillsAmount: Number,
+    repairsAmount: Number,
+    capexAmount: Number,
+    othersAmount: Number,
+
     expenseNote: String,
     status: String
 
