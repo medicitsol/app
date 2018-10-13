@@ -2,30 +2,54 @@ const Item = require('../models/item-master.model.js');
 const Inventory = require('../models/inventory.master.model');
 const Billing = require('../models/billing.model');
 const Expense = require('../models/expenses.model');
+const mergeByKey = require('array-merge-by-key');
 
 
 
 // Retrieve and return all items from the database.
 exports.getBillingRevenueReport = (req, res) => {
 
+
+    var today = new Date();
+    var todayDate = today.toISOString();
+
     var reportType = req.params.reportType
     var dateFilter = {};
 
 
     if (reportType == 1) {
-        dateFilter = { status: { $ne: 'DELETED' } }
-    } else if (reportType == 2) {
-        var lastWeek = new Date();
 
-        dateFilter = { billDate: { $gte: lastWeek.setDate(lastWeek.getDate() - 1) }, status: { $ne: 'DELETED' } }
+        dateFilter = { status: { $ne: 'DELETED' } }
+
+    } else if (reportType == 2) {
+
+
+        var lastWeek = new Date();
+        var lastWeekDate;
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        lastWeek.setUTCHours(0, 0, 0, 0);
+        lastWeekDate = lastWeek.toISOString();
+
+        dateFilter = { billDate: { $gte: lastWeekDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
 
     } else if (reportType == 3) {
         var date = new Date();
-        dateFilter = { billDate: { $gte: new Date(date.getFullYear(), date.getMonth(), 1) }, status: { $ne: 'DELETED' } }
+        var monthToDate;
+        var monthFirst = new Date(date.getFullYear(), date.getMonth(), 2);
+        monthFirst.setUTCHours(0, 0, 0, 0);
+        monthToDate = monthFirst.toISOString();
+
+        dateFilter = { billDate: { $gte: monthToDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
+
 
     } else if (reportType == 4) {
-        dateFilter = { billDate: { $gte: new Date(new Date().getFullYear(), 0, 1) }, status: { $ne: 'DELETED' } }
 
+        var yearToDate;
+        var yearFirst = new Date(new Date().getFullYear(), 0, 2);
+        yearFirst.setUTCHours(0, 0, 0, 0);
+        yearToDate = yearFirst.toISOString();
+
+        dateFilter = { billDate: { $gte: yearToDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
     }
 
     var responsePayload = []
@@ -33,51 +57,11 @@ exports.getBillingRevenueReport = (req, res) => {
 
     var total = 0;
 
-
-    // Billing.find(dateFilter).sort({ billDate: 1 })
-    //     .then(bill => {
-
-
-
-    //         bill.forEach(element => {
-
-    //             total = element.consultationFee + element.pharmaceuticalFee + element.laboratoryFee + element.ECGFee + element.CBSFee + element.procedureFee + element.otherFee;
-
-
-    //             var responseWithTotal = {
-    //                 createdDate: element.createdAt,
-    //                 editedDate: element.updatedAt,
-    //                 billDate: element.billDate,
-    //                 consultationFee: element.consultationFee,
-    //                 pharmaceuticalFee: element.pharmaceuticalFee,
-    //                 laboratoryFee: element.laboratoryFee,
-    //                 ECGFee: element.ECGFee,
-    //                 CBSFee: element.CBSFee,
-    //                 procedureFee: element.procedureFee,
-    //                 otherFee: element.otherFee,
-    //                 totalFee: total
-    //             }
-
-    //             responsePayload.push(responseWithTotal)
-
-
-
-    //         });
-
-
-    //         res.send(responsePayload);
-
-
-
-
-
-
-
     Billing.aggregate(
 
 
         [{
-            $match: { status: { $ne: 'DELETED' } },
+            $match: dateFilter,
         }, {
             $group: {
                 _id: "$billDate",
@@ -88,8 +72,6 @@ exports.getBillingRevenueReport = (req, res) => {
                 CBSFee: { $sum: "$CBSFee" },
                 procedureFee: { $sum: "$procedureFee" },
                 otherFee: { $sum: "$otherFee" }
-
-
             }
         }])
 
@@ -146,24 +128,46 @@ exports.getBillingRevenueReport = (req, res) => {
 // Retrieve and return all items from the database.
 exports.getExpenseReport = (req, res) => {
 
+    var today = new Date();
+    var todayDate = today.toISOString();
+
     var reportType = req.params.reportType
     var dateFilter = {};
 
 
     if (reportType == 1) {
-        dateFilter = {}
-    } else if (reportType == 2) {
-        var lastWeek = new Date();
 
-        dateFilter = { createdAt: { $gte: lastWeek.setDate(lastWeek.getDate() - 1) } }
+        dateFilter = { status: { $ne: 'DELETED' } }
+
+    } else if (reportType == 2) {
+
+
+        var lastWeek = new Date();
+        var lastWeekDate;
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        lastWeek.setUTCHours(0, 0, 0, 0);
+        lastWeekDate = lastWeek.toISOString();
+
+        dateFilter = { voucherDate: { $gte: lastWeekDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
 
     } else if (reportType == 3) {
         var date = new Date();
-        dateFilter = { createdAt: { $gte: new Date(date.getFullYear(), date.getMonth(), 1) } }
+        var monthToDate;
+        var monthFirst = new Date(date.getFullYear(), date.getMonth(), 2);
+        monthFirst.setUTCHours(0, 0, 0, 0);
+        monthToDate = monthFirst.toISOString();
+
+        dateFilter = { voucherDate: { $gte: monthToDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
+
 
     } else if (reportType == 4) {
-        dateFilter = { createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) } }
 
+        var yearToDate;
+        var yearFirst = new Date(new Date().getFullYear(), 0, 2);
+        yearFirst.setUTCHours(0, 0, 0, 0);
+        yearToDate = yearFirst.toISOString();
+
+        dateFilter = { voucherDate: { $gte: yearToDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
     }
 
     var responsePayload = []
@@ -171,71 +175,11 @@ exports.getExpenseReport = (req, res) => {
 
     var total = 0;
 
-    // Expense.aggregate(
-
-    //     [
-    //         {
-    //             $match: dateFilter,
-    //         },
-
-    //         {
-    //             $group: {
-    //                 _id: {
-    //                     voucherDate: '$voucherDate',
-    //                     // expenseCategory: '$expenseCategory'
-    //                 },
-    //                 total: {
-    //                     $sum: "$amount"
-    //                 },
-    //                 expenses: {
-    //                     $push: {
-    //                         expense: "$expense",
-    //                         expenseNote: "$expenseNote",
-    //                         status: "$status",
-    //                         voucherDate: '$voucherDate',
-    //                         expenseCategory: '$expenseCategory',
-    //                         amount: '$amount'
-    //                     }
-    //                 }
-    //             }
-
-    //         }])
-
-    //     .then(expense => {
-
-    //         res.send(expense);
-
-
-
-
-
-    // Expense.aggregate(
-
-
-    //     [{
-    //         $match: { status: { $ne: 'DELETED' } },
-    //     }, {
-    //         $group: {
-    //             _id: "$voucherDate",
-    //             expenseCat: { $push: "$expenseCategory" },
-    //             tot: { $push: "$amount" }
-    //             // laboratoryFee: { $sum: "$laboratoryFee" },
-    //             // itemsSold: { $addToSet: "$expenseCategory"},
-    //             // tot: { $addToSet: "$amount"}
-
-
-
-    //         }
-    //     }])
-
-
-
-
     Expense.aggregate(
 
 
         [{
-            $match: { status: { $ne: 'DELETED' } },
+            $match: dateFilter,
         }, {
             $group: {
                 _id: "$voucherDate",
@@ -302,52 +246,65 @@ exports.getExpenseReport = (req, res) => {
 
 
 // Retrieve and return all items from the database.
-exports.getRevenueReport = (req, res) => {
+exports.getProfitReport = (req, res) => {
+
+    var today = new Date();
+    var todayDate = today.toISOString();
 
     var reportType = req.params.reportType
     var dateFilter = {};
 
 
     if (reportType == 1) {
-        dateFilter = {}
-    } else if (reportType == 2) {
-        var lastWeek = new Date();
 
-        dateFilter = { createdAt: { $gte: lastWeek.setDate(lastWeek.getDate() - 1) } }
+        dateFilter = { status: { $ne: 'DELETED' } }
+
+    } else if (reportType == 2) {
+
+
+        var lastWeek = new Date();
+        var lastWeekDate;
+        lastWeek.setDate(lastWeek.getDate() - 7);
+        lastWeek.setUTCHours(0, 0, 0, 0);
+        lastWeekDate = lastWeek.toISOString();
+
+        dateFilter = { voucherDate: { $gte: lastWeekDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
 
     } else if (reportType == 3) {
         var date = new Date();
-        dateFilter = { createdAt: { $gte: new Date(date.getFullYear(), date.getMonth(), 1) } }
+        var monthToDate;
+        var monthFirst = new Date(date.getFullYear(), date.getMonth(), 2);
+        monthFirst.setUTCHours(0, 0, 0, 0);
+        monthToDate = monthFirst.toISOString();
+
+        dateFilter = { voucherDate: { $gte: monthToDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
+
 
     } else if (reportType == 4) {
-        dateFilter = { createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) } }
 
+        var yearToDate;
+        var yearFirst = new Date(new Date().getFullYear(), 0, 2);
+        yearFirst.setUTCHours(0, 0, 0, 0);
+        yearToDate = yearFirst.toISOString();
+
+        dateFilter = { voucherDate: { $gte: yearToDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
     }
 
-    var responsePayload = [];
-
-    var profit = {
-        revenue: null,
-        expense: null
-    }
+    var expenseResponse = [];
 
 
-    var total = 0;
+    var totalAmountOfExpense = 0;
 
     Expense.aggregate(
 
         [
             {
-                $match: { status: { $ne: 'DELETED' } },
+                $match: dateFilter,
             },
 
             {
                 $group: {
                     _id: '$voucherDate',
-
-                    // total: {
-                    //     $sum: "$amount"
-                    // }
 
                     drugsAmount: { $sum: "$drugsAmount" },
                     salariesAmount: { $sum: "$salariesAmount" },
@@ -364,30 +321,27 @@ exports.getRevenueReport = (req, res) => {
 
         .then(expense => {
 
-            // res.send(expense);
-
-
-
-
-
-
             expense.forEach(element => {
 
-                total = element.drugsAmount + element.salariesAmount + element.teaClubAmount + element.stationeriesAmount + element.utilityBillsAmount + element.repairsAmount + element.capexAmount + element.othersAmount;
+                totalAmountOfExpense = element.drugsAmount + element.salariesAmount + element.teaClubAmount + element.stationeriesAmount + element.utilityBillsAmount + element.repairsAmount + element.capexAmount + element.othersAmount;
 
 
-                var responseWithTotal = {
-                    voucherDate: element._id,
-                    totalExpense: total
+                var totalExpense = {
+                    date: element._id,
+                    expense: totalAmountOfExpense,
+                    revenue: 0
                 }
 
-                responsePayload.push(responseWithTotal)
-
+                expenseResponse.push(totalExpense);
 
 
             });
 
-            res.send(responsePayload);
+
+
+            var revenueResponse = [];
+            var totalRevenue = 0;
+            // *****************************************************************************
 
 
 
@@ -395,88 +349,159 @@ exports.getRevenueReport = (req, res) => {
 
 
 
+            // var today = new Date();
+            // var todayDate = today.toISOString();
+
+            // var reportType = req.params.reportType
+            var billDateFilter = {};
+
+
+            if (reportType == 1) {
+
+                billDateFilter = { status: { $ne: 'DELETED' } }
+
+            } else if (reportType == 2) {
+
+
+                var billLastWeek = new Date();
+                var billLastWeekDate;
+                billLastWeek.setDate(billLastWeek.getDate() - 7);
+                billLastWeek.setUTCHours(0, 0, 0, 0);
+                billLastWeekDate = billLastWeek.toISOString();
+
+                billDateFilter = { billDate: { $gte: billLastWeekDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
+
+            } else if (reportType == 3) {
+                var billDate = new Date();
+                var billMonthToDate;
+                var billMonthFirst = new Date(billDate.getFullYear(), billDate.getMonth(), 2);
+                billMonthFirst.setUTCHours(0, 0, 0, 0);
+                billMonthToDate = billMonthFirst.toISOString();
+
+                billDateFilter = { billDate: { $gte: billMonthToDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
+
+
+            } else if (reportType == 4) {
+
+                var billYearToDate;
+                var billYearFirst = new Date(new Date().getFullYear(), 0, 2);
+                billYearFirst.setUTCHours(0, 0, 0, 0);
+                billYearToDate = billYearFirst.toISOString();
+
+                billDateFilter = { billDate: { $gte: billYearToDate, $lt: todayDate }, status: { $ne: 'DELETED' } }
+            }
+
+
+
+            expenseResponse.forEach(expensePayload => {
+
+
+                Billing.aggregate(
+
+                    [
+                        {
+                            $match: billDateFilter,
+                        },
+
+                        {
+
+                            $group: {
+                                _id: "$billDate",
+                                consultationFee: { $sum: "$consultationFee" },
+                                pharmaceuticalFee: { $sum: "$pharmaceuticalFee" },
+                                laboratoryFee: { $sum: "$laboratoryFee" },
+                                ECGFee: { $sum: "$ECGFee" },
+                                CBSFee: { $sum: "$CBSFee" },
+                                procedureFee: { $sum: "$procedureFee" },
+                                otherFee: { $sum: "$otherFee" }
+                            }
+
+                        }])
+
+                    .then(revenue => {
+
+
+                        revenue.forEach(element => {
+
+                            totalRevenue = element.consultationFee + element.pharmaceuticalFee + element.laboratoryFee + element.ECGFee + element.CBSFee + element.procedureFee + element.otherFee;
+
+
+                            var totalExpense = {
+                                date: element._id,
+                                expense: 0,
+                                revenue: totalRevenue
+                            }
+                            expenseResponse.push(totalExpense)
+
+                        });
+
+
+
+                        var revenueReportPayload = {
+                            expense: expenseResponse,
+                            revenue: revenueResponse
+                        }
+
+
+
+                        // helper find function
+                        function getByDate(list, date) {
+                            function dateMatches(item) {
+                                return item.date === date
+                            }
+                            return list.find(dateMatches)
+                        }
+
+                        // get combined result
+                        var combinedArray = []
+
+                        expenseResponse.forEach(function (item) {
+                            var previousMatch = getByDate(combinedArray, item.date)
+                            if (previousMatch) {
+                                previousMatch.expense += item.expense;
+                                previousMatch.revenue += item.revenue;
+
+                            }
+                            else {
+                                combinedArray.push({
+                                    date: item.date,
+                                    expense: item.expense,
+                                    revenue: item.revenue
+                                })
+                            }
+                        });
 
 
 
 
-            // =================================================
-            // Billing.aggregate(
+                        var finalProfit = [];
 
-            //     [
-            //         {
-            //             $match: { status: { $ne: 'DELETED' } },
-            //         },
+                        combinedArray.forEach(fin => {
 
-            //         {
-            //             $group: {
-            //                 _id: {
-            //                     billDate: '$billDate',
-            //                 },
-            //                 // total: {
-            //                 //     $sum: ['$consultationFee', '$otherFee']
-            //                 // },
-            //                 billingRevenue: {
-            //                     $push: {
-            //                         consultationFee: "$consultationFee",
-            //                         pharmaceuticalFee: "$pharmaceuticalFee",
-            //                         laboratoryFee: "$laboratoryFee",
-            //                         ECGFee: '$ECGFee',
-            //                         CBSFee: '$CBSFee',
-            //                         procedureFee: '$procedureFee',
-            //                         otherFee: '$otherFee'
-            //                     }
-            //                 }
-            //             }
+                            var final = {
+                                date: fin.date,
+                                expense: fin.expense,
+                                revenue: fin.revenue,
+                                profit: fin.revenue - fin.expense
+                            }
 
-            //         }])
-
-            //     .then(revenue => {
-
-            //         var total = 0;
-            //         var revenueArray = [];
-            //         var totalRev = 0;
-
-            //         revenue.forEach(element => {
-
-            //             // total = element.consultationFee + element.pharmaceuticalFee + element.laboratoryFee + element.ECGFee + element.CBSFee + element.procedureFee + element.otherFee;
-
-            //             // var totalRevArray = []
-            //             // totalRevArray = element._id['billingRevenue'];
-
-            //             // totalRevArray.forEach(revAr => {
-
-            //             //     totalRev = revAr.consultationFee + revAr.otherFee;
-
-            //             // });
-
-            //             // var elemArr = {
-            //             //     date: element._id,
-            //             //     total: totalRev
-            //             // }
+                            finalProfit.push(final)
 
 
-            //             // elemArr = element._id
-            //             revenueArray.push(element);
-            //         });
+                        });
 
-
-            //         var profit = {
-            //             revenue: revenueArray,
-            //             expense: expense
-            //         }
-
-            //         res.send(profit);
-
-            //     }).catch(err => {
-            //         res.status(500).send({
-            //             message: err.message || "Some error occurred while retrieving bills."
-            //         });
-            //     });
-            // ==============================================
+                        res.send(finalProfit);
 
 
 
 
+                    }).catch(err => {
+                        res.status(500).send({
+                            message: err.message || "Some error occurred while retrieving bills."
+                        });
+                    });
+
+            });
 
 
         }).catch(err => {

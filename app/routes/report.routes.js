@@ -11,7 +11,7 @@ module.exports = (app) => {
     app.get('/expense-report/:reportType', report.getExpenseReport);
 
     // Retrieve expense report
-    app.get('/revenue-report/:reportType', report.getRevenueReport);
+    app.get('/profit-report/:reportType', report.getProfitReport);
 
     // // Retrieve a single Note with noteId
     // app.get('/order/:orderId', items.findOne);
