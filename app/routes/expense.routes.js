@@ -10,8 +10,8 @@ module.exports = (app) => {
     // // Retrieve a single Note with noteId
     // app.get('/order/:orderId', items.findOne);
 
-    // // Update a Note with noteId
-    // app.put('/order/change-order-status/:orderId', orders.orderMarkAsReceived);
+    // Update a Note with noteId
+    app.put('/expense/:expenseId', expense.update);
 
     // // Update a Note with noteId
     // app.put('/order/edit-order/:orderId', orders.editOrder);
@@ -21,4 +21,7 @@ module.exports = (app) => {
 
     // Update a Note with noteId
     app.put('/expense/delete-expense/:expenseNo', expense.expenseDelete);
+
+    app.put('/expense/apprive-expense/:expenseNo', expense.expenseApprove);
+
 }
