@@ -20,7 +20,6 @@ exports.create = (req, res) => {
             var setItemCode;
             var convertedItemCode = 0;
             var convertedItemCodeFinal = 0;
-            var stringItemCount;
             var selectedLetter;
 
             var finalItemCode;

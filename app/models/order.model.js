@@ -4,7 +4,7 @@ var mongoosePaginate = require('mongoose-paginate');
 
 const OrderSchema = mongoose.Schema({
 
-    orderId: Number,
+    orderId: String,
     orderDate: String,
     supplierName: String,
     supplierId: String,

@@ -2,6 +2,7 @@ const Order = require('../models/order.model');
 const Inventory = require('../models/inventory.master.model');
 const Items = require('../models/order-items.schema');
 const { ObjectId } = require('mongodb'); // or ObjectID 
+const leftPad = require('left-pad')
 
 
 // Create and Save a new Item
@@ -14,24 +15,58 @@ exports.create = (req, res) => {
         itemArray.push((item));
     });
 
+    
+    var today = new Date();
+    var thisYear = today.getFullYear().toString().substr(-2)
+    var todayDayTemp = today.getMonth() + 1;
+    var todayDay = leftPad(todayDayTemp, 2, 0);
+    console.log("todayyyyy", today);
+    console.log("date", todayDay);
+    console.log("year", thisYear);
 
 
+    var orderCodeSliced = "OR" + thisYear + todayDay;
 
-    Order.find().limit(1).sort({ $natural: -1 })
+
+    Order.find({ orderId: { $regex: orderCodeSliced, $options: "$i" } }).limit(1).sort({ $natural: -1 })
         .then(lastOrder => {
 
-            var orderId = 0;
+
+
+
+            var currentOrderId = 0;
+            var convertedOrderId;
+            var convertedOrderIdFinal;
+            var finalOrderSequence;
+            var capitalizedFinalOrderSequence;
 
             if (lastOrder.length > 0) {
-                orderId = lastOrder[0].orderId + 1;
+                currentOrderId = lastOrder[0].orderId + 1;
+
+                currentOrderId = lastOrder[0].orderId.slice(6, 9);
+                convertedOrderId = parseInt(currentOrderId);
+                convertedOrderIdFinal = convertedOrderId + 1;
+
+                finalOrderSequence = "OR" + thisYear + todayDay + leftPad(convertedOrderIdFinal, 3, 0);
+                capitalizedFinalOrderSequence = finalOrderSequence.toUpperCase();
+
+
             } else {
-                orderId = 0 + 1;
+                currentOrderId = 0 + 1;
+
+                finalOrderSequence = "OR" + thisYear + todayDay + leftPad(currentOrderId, 3, 0);
+                capitalizedFinalOrderSequence = finalOrderSequence.toUpperCase();
             }
+
+
+
+
+
 
             // Create a Order
             const order = new Order({
 
-                orderId: orderId,
+                orderId: capitalizedFinalOrderSequence,
                 orderDate: req.body.orderDate,
                 supplierName: req.body.supplierName,
                 supplierId: req.body.supplierId,
