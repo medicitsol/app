@@ -189,7 +189,14 @@ exports.received = (req, res) => {
 
 // Retrieve and return all orders from the database.
 exports.findAll = (req, res) => {
-    Order.paginate({ status: { $ne: 'DELETED' } }, { limit: 5 })
+
+
+    var options = {
+        sort: { updatedAt: -1 },
+        limit: 20
+    };
+
+    Order.paginate({ status: { $ne: 'DELETED' } }, options)
         .then(orders => {
             res.send(orders);
         }).catch(err => {
@@ -263,7 +270,7 @@ exports.editOrder = (req, res) => {
         supplierName: req.body.supplierName,
         supplierId: req.body.supplierId,
         orderNote: req.body.orderNote,
-        items: itemArray  
+        items: itemArray
 
 
     }, { new: true })
