@@ -261,8 +261,9 @@ exports.editOrder = (req, res) => {
         // Create an Item
         orderDate: req.body.orderDate,
         supplierName: req.body.supplierName,
+        supplierId: req.body.supplierId,
         orderNote: req.body.orderNote,
-        items: itemArray
+        items: itemArray  
 
 
     }, { new: true })
